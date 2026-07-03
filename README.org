@@ -1,0 +1,8 @@
+#+TITLE: Org-Pitch
+
+A lightweight presentation mode for =org-mode=.
+
+Launch =org-pitch= and the current org heading becomes the root slide, the immediate children form the rest of the slides.
+
+Navigate with =M-<right>= and =M-<left>=, quit with =M-q=. 
+

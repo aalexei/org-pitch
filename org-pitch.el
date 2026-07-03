@@ -1,5 +1,17 @@
 ;;; org-pitch.el --- Present org subtrees -*- lexical-binding: t; -*-
 
+;; Author: Alexei Gilchrist
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "27.1") (org "9.6"))
+;; Keywords: outlines, presentations
+;; URL: https://github.com/aalexei/org-pitch
+
+;;; Commentary:
+
+;; org-pitch presents an Org subtree as a simple slide deck.
+
+;;; Code:
+
 (require 'org)
 
 ;; Inspired by org-present
@@ -9,7 +21,14 @@
 (define-key org-pitch-mode-keymap [M-left]    'org-pitch-prev)
 (define-key org-pitch-mode-keymap (kbd "M-q") 'org-pitch-quit)
 
-(defvar org-pitch-text-scale 5)
+(defgroup org-pitch nil
+  "Present Org subtrees."
+  :group 'org)
+
+(defcustom org-pitch-text-scale 5
+  "Text scale increase used during org-pitch presentations."
+  :type 'integer
+  :group 'org-pitch)
 
 (defvar-local org-pitch--root-marker nil
   "Marker for the heading that owns the current org-pitch presentation.")
@@ -141,3 +160,5 @@
         (org-pitch--show-menu)))))
 
 (provide 'org-pitch)
+
+;;; org-pitch.el ends here

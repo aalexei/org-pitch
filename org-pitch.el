@@ -54,11 +54,13 @@
              (intern "org-show-children"))))
 
 (defun org-pitch--show-menu ()
-  "Show the root heading and its direct children as a collapsed menu."
+  "Show the expanded root heading with direct children as a collapsed menu."
   (org-pitch--goto-root)
   (org-narrow-to-subtree)
   (goto-char (point-min))
   (org-overview)
+  (org-pitch--show-entry)
+  (goto-char (point-min))
   (org-pitch--show-children)
   (setq org-pitch--menu-p t)
   (org-display-inline-images))

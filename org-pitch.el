@@ -31,7 +31,10 @@
   :group 'org-pitch)
 
 (defvar-local org-pitch--root-marker nil
-  "Marker for the heading that owns the current org-pitch presentation.")
+  "Marker for the root of the current org-pitch presentation.")
+
+(defvar-local org-pitch--root-file-p nil
+  "Non-nil when the current org-pitch root is the file preamble.")
 
 (defvar-local org-pitch--menu-p nil
   "Non-nil when org-pitch is showing the root heading menu slide.")
@@ -45,20 +48,56 @@
 (make-variable-buffer-local 'org-pitch-mode)
 
 (defun org-pitch--goto-root ()
-  "Widen and move point to the current org-pitch root heading."
+  "Widen and move point to the current org-pitch root."
   (unless (and (markerp org-pitch--root-marker)
                (marker-buffer org-pitch--root-marker))
     (user-error "No org-pitch presentation is active"))
   (widen)
   (goto-char org-pitch--root-marker)
-  (org-back-to-heading t))
+  (unless org-pitch--root-file-p
+    (org-back-to-heading t)))
 
 (defun org-pitch--root-end ()
-  "Return the end position of the current org-pitch root subtree."
+  "Return the end position of the current org-pitch root."
   (save-restriction
     (save-excursion
       (org-pitch--goto-root)
-      (org-end-of-subtree t t))))
+      (if org-pitch--root-file-p
+          (point-max)
+        (org-end-of-subtree t t)))))
+
+(defun org-pitch--goto-first-file-child ()
+  "Move point to the first top-level heading and return non-nil if found."
+  (goto-char (point-min))
+  (let ((found nil))
+    (while (and (not found) (re-search-forward org-heading-regexp nil t))
+      (beginning-of-line)
+      (if (= (org-current-level) 1)
+          (setq found t)
+        (forward-line 1)))
+    found))
+
+(defun org-pitch--goto-first-child ()
+  "Move point to the first direct child of the current org-pitch root."
+  (if org-pitch--root-file-p
+      (org-pitch--goto-first-file-child)
+    (org-goto-first-child)))
+
+(defun org-pitch--first-heading-position ()
+  "Return the position of the first Org heading in the visible buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward org-heading-regexp nil t)
+      (line-beginning-position))))
+
+(defun org-pitch--show-file-preamble ()
+  "Show file-level content before the first heading."
+  (funcall (if (fboundp 'org-fold-region)
+               #'org-fold-region
+             (intern "org-flag-region"))
+           (point-min)
+           (or (org-pitch--first-heading-position) (point-max))
+           nil))
 
 (defun org-pitch--show-entry ()
   "Show the current Org entry using the available Org folding API."
@@ -75,10 +114,14 @@
 (defun org-pitch--show-menu ()
   "Show the expanded root heading with direct children as a collapsed menu."
   (org-pitch--goto-root)
-  (org-narrow-to-subtree)
+  (if org-pitch--root-file-p
+      (narrow-to-region (point-min) (org-pitch--root-end))
+    (org-narrow-to-subtree))
   (goto-char (point-min))
   (org-overview)
-  (org-pitch--show-entry)
+  (if org-pitch--root-file-p
+      (org-pitch--show-file-preamble)
+    (org-pitch--show-entry))
   (goto-char (point-min))
   (org-pitch--show-children)
   (setq org-pitch--menu-p t)
@@ -95,7 +138,10 @@
 
 (defun org-pitch ()
   (interactive)
-  (org-back-to-heading t)
+  (setq org-pitch--root-file-p (org-before-first-heading-p))
+  (if org-pitch--root-file-p
+      (goto-char (point-min))
+    (org-back-to-heading t))
   (setq org-pitch--root-marker (point-marker))
   (org-pitch-mode 1)
   (text-scale-increase 0)
@@ -113,6 +159,7 @@
   (when (markerp org-pitch--root-marker)
     (set-marker org-pitch--root-marker nil))
   (setq org-pitch--root-marker nil)
+  (setq org-pitch--root-file-p nil)
   (setq org-pitch--menu-p nil)
   (org-pitch-mode -1))
 
@@ -121,7 +168,7 @@
   (if org-pitch--menu-p
       (progn
         (org-pitch--goto-root)
-        (if (org-goto-first-child)
+        (if (org-pitch--goto-first-child)
             (org-pitch--show-slide)
           (org-pitch--show-menu)
           (message "No child headings in this org-pitch root")))

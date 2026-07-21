@@ -2,7 +2,8 @@
 
 A lightweight presentation mode for =org-mode=.
 
-Launch =org-pitch= and the current org heading becomes the root slide, the immediate children form the rest of the slides.
+Launch =org-pitch= on an Org heading and that heading becomes the root slide, while its immediate children form the rest of the slides.
 
-Navigate with =M-<right>= and =M-<left>=, quit with =M-q=. 
+Launch it before the first heading and the file-level preamble becomes the root slide, while top-level headings form the rest of the slides.
 
+Navigate with =M-<right>= and =M-<left>=, quit with =M-q=.

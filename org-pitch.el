@@ -1,7 +1,7 @@
 ;;; org-pitch.el --- Present org subtrees -*- lexical-binding: t; -*-
 
 ;; Author: Alexei Gilchrist
-;; Version: 0.1.0
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "27.1") (org "9.6"))
 ;; Keywords: outlines, presentations
 ;; URL: https://github.com/aalexei/org-pitch
